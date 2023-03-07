@@ -38,7 +38,7 @@ resource database 'Microsoft.DBforMySQL/flexibleServers@2021-12-01-preview' = {
     administratorLogin: adminUser
     administratorLoginPassword: adminPassword
     network: {
-      delegatedSubnetResourceId: virtualNetwork.properties.subnets[2].id
+      delegatedSubnetResourceId: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetwork.name, 'storage')
       privateDnsZoneResourceId: dnsZone.id
     }
     storage: {
@@ -68,7 +68,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2020-06-01' = {
   location: location
   properties: {
     subnet: {
-      id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetwork.name, 'backends')
+      id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetwork.name, 'storage')
     }
     privateLinkServiceConnections: [
       {
@@ -76,7 +76,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2020-06-01' = {
         properties: {
           privateLinkServiceId: database.id
           groupIds: [
-            'sites'
+            'flexibleServers'
           ]
         }
       }

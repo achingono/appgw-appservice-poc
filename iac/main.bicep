@@ -68,6 +68,7 @@ module database 'modules/mysql.bicep' = {
   scope: resourceGroup
   dependsOn: [
     vnet
+    dns
   ]
   params: {
     databaseName: databaseName
@@ -105,6 +106,7 @@ module site 'modules/site.bicep' = {
   scope: resourceGroup
   dependsOn: [
     vnet
+    dns
     insights
     database
   ]

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.14.85.62628",
-      "templateHash": "16020386370065332226"
+      "templateHash": "3475186792752649195"
     }
   },
   "parameters": {
@@ -115,7 +115,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.14.85.62628",
-              "templateHash": "15927552959597678950"
+              "templateHash": "2290608434819266232"
             }
           },
           "parameters": {
@@ -138,7 +138,7 @@
               "type": "string",
               "defaultValue": "10.0.1.0/24"
             },
-            "databaseSubnetPrefix": {
+            "storageSubnetPrefix": {
               "type": "string",
               "defaultValue": "10.0.2.0/24"
             }
@@ -181,9 +181,9 @@
                     }
                   },
                   {
-                    "name": "databases",
+                    "name": "storage",
                     "properties": {
-                      "addressPrefix": "[parameters('databaseSubnetPrefix')]",
+                      "addressPrefix": "[parameters('storageSubnetPrefix')]",
                       "privateEndpointNetworkPolicies": "Enabled",
                       "privateLinkServiceNetworkPolicies": "Enabled",
                       "delegations": [
@@ -405,7 +405,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.14.85.62628",
-              "templateHash": "4128438303649747487"
+              "templateHash": "14793675578636712390"
             }
           },
           "parameters": {
@@ -506,7 +506,7 @@
                 "administratorLogin": "[parameters('adminUser')]",
                 "administratorLoginPassword": "[parameters('adminPassword')]",
                 "network": {
-                  "delegatedSubnetResourceId": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '2021-05-01').subnets[2].id]",
+                  "delegatedSubnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'storage')]",
                   "privateDnsZoneResourceId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.mysql.database.azure.com')]"
                 },
                 "storage": {
@@ -537,7 +537,7 @@
               "location": "[parameters('location')]",
               "properties": {
                 "subnet": {
-                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'backends')]"
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'storage')]"
                 },
                 "privateLinkServiceConnections": [
                   {
@@ -545,7 +545,7 @@
                     "properties": {
                       "privateLinkServiceId": "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('databaseName'))]",
                       "groupIds": [
-                        "sites"
+                        "flexibleServers"
                       ]
                     }
                   }
@@ -577,6 +577,7 @@
         }
       },
       "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-zone', deployment().name))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-vnet', deployment().name))]"
       ]
@@ -952,6 +953,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-database', deployment().name))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-zone', deployment().name))]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-appinsights', deployment().name))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-serverFarm', deployment().name))]",

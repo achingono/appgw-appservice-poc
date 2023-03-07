@@ -3,7 +3,7 @@ param location string = resourceGroup().location
 param virtualNetworkPrefix string = '10.0.0.0/16'
 param subnetPrefix string = '10.0.0.0/24'
 param backendSubnetPrefix string = '10.0.1.0/24'
-param databaseSubnetPrefix string = '10.0.2.0/24'
+param storageSubnetPrefix string = '10.0.2.0/24'
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: virtualNetworkName
@@ -40,9 +40,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         }
       }
       {
-        name: 'databases'
+        name: 'storage'
         properties: {
-          addressPrefix: databaseSubnetPrefix
+          addressPrefix: storageSubnetPrefix
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
           delegations: [
