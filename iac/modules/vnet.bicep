@@ -29,12 +29,12 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
           addressPrefix: backendSubnetPrefix
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
-          delegations: [
+          serviceEndpoints: [
             {
-              name: 'delegation'
-              properties: {
-                serviceName: 'Microsoft.Web/serverfarms'
-              }
+              service: 'Microsoft.Web'
+              locations: [
+                location
+              ]
             }
           ]
         }

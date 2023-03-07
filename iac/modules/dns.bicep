@@ -1,4 +1,3 @@
-param zoneName string
 param virtualNetworkName string
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
@@ -6,11 +5,8 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing 
 }
 
 resource siteZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: '${zoneName}.azurewebsites.net'
+  name: 'privatelink.azurewebsites.net'
   location: 'global'
-  dependsOn: [
-    virtualNetwork
-  ]
 }
 
 resource siteZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
@@ -26,11 +22,8 @@ resource siteZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@202
 }
 
 resource sqlZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: '${zoneName}.mysql.database.azure.com'
+  name: 'privatelink.mysql.database.azure.com'
   location: 'global'
-  dependsOn: [
-    virtualNetwork
-  ]
 }
 
 resource sqlZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {

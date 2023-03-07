@@ -5,7 +5,6 @@ param insightsName string
 param registryName string
 param imageName string
 param virtualNetworkName string
-param dnsZoneName string
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
   name: insightsName
@@ -19,8 +18,8 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing 
   name: virtualNetworkName
 }
 
-resource zone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
-  name: '${dnsZoneName}.azurewebsites.net'
+resource dnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  name: 'privatelink.mysql.database.azure.com'
 }
 
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
@@ -107,7 +106,7 @@ resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
       {
         name: '${siteName}-zoneconfig'
         properties: {
-          privateDnsZoneId: zone.id
+          privateDnsZoneId: dnsZone.id
         }
       }
     ]

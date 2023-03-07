@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.14.85.62628",
-      "templateHash": "3203982602299098520"
+      "templateHash": "16020386370065332226"
     }
   },
   "parameters": {
@@ -78,10 +78,6 @@
     "virtualNetworkName": {
       "type": "string",
       "defaultValue": "[format('vnet-{0}-{1}', parameters('name'), parameters('uniqueSuffix'))]"
-    },
-    "dnsZoneName": {
-      "type": "string",
-      "defaultValue": "[format('{0}{1}', parameters('name'), parameters('uniqueSuffix'))]"
     }
   },
   "resources": [
@@ -93,92 +89,6 @@
       "tags": {
         "environment-name": "[parameters('name')]"
       }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
-      "name": "[format('{0}-zone', deployment().name)]",
-      "resourceGroup": "[format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "zoneName": {
-            "value": "[parameters('dnsZoneName')]"
-          },
-          "virtualNetworkName": {
-            "value": "[parameters('virtualNetworkName')]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.14.85.62628",
-              "templateHash": "4786133289174201334"
-            }
-          },
-          "parameters": {
-            "zoneName": {
-              "type": "string"
-            },
-            "virtualNetworkName": {
-              "type": "string"
-            }
-          },
-          "resources": [
-            {
-              "type": "Microsoft.Network/privateDnsZones",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}.azurewebsites.net', parameters('zoneName'))]",
-              "location": "global"
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/{1}', format('{0}.azurewebsites.net', parameters('zoneName')), format('{0}-link', format('{0}.azurewebsites.net', parameters('zoneName'))))]",
-              "location": "global",
-              "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                  "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
-                }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', format('{0}.azurewebsites.net', parameters('zoneName')))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}.mysql.database.azure.com', parameters('zoneName'))]",
-              "location": "global"
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/{1}', format('{0}.mysql.database.azure.com', parameters('zoneName')), format('{0}-link', format('{0}.mysql.database.azure.com', parameters('zoneName'))))]",
-              "location": "global",
-              "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                  "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
-                }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', format('{0}.mysql.database.azure.com', parameters('zoneName')))]"
-              ]
-            }
-          ]
-        }
-      },
-      "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]"
-      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -205,7 +115,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.14.85.62628",
-              "templateHash": "4133325878034883340"
+              "templateHash": "15927552959597678950"
             }
           },
           "parameters": {
@@ -260,12 +170,12 @@
                       "addressPrefix": "[parameters('backendSubnetPrefix')]",
                       "privateEndpointNetworkPolicies": "Enabled",
                       "privateLinkServiceNetworkPolicies": "Enabled",
-                      "delegations": [
+                      "serviceEndpoints": [
                         {
-                          "name": "delegation",
-                          "properties": {
-                            "serviceName": "Microsoft.Web/serverfarms"
-                          }
+                          "service": "Microsoft.Web",
+                          "locations": [
+                            "[parameters('location')]"
+                          ]
                         }
                       ]
                     }
@@ -296,6 +206,87 @@
       },
       "dependsOn": [
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}-zone', deployment().name)]",
+      "resourceGroup": "[format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualNetworkName": {
+            "value": "[parameters('virtualNetworkName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.14.85.62628",
+              "templateHash": "15068789278145813421"
+            }
+          },
+          "parameters": {
+            "virtualNetworkName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "privatelink.azurewebsites.net",
+              "location": "global"
+            },
+            {
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', 'privatelink.azurewebsites.net', format('{0}-link', 'privatelink.azurewebsites.net'))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.azurewebsites.net')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "privatelink.mysql.database.azure.com",
+              "location": "global"
+            },
+            {
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', 'privatelink.mysql.database.azure.com', format('{0}-link', 'privatelink.mysql.database.azure.com'))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.mysql.database.azure.com')]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-vnet', deployment().name))]"
       ]
     },
     {
@@ -405,9 +396,6 @@
           },
           "virtualNetworkName": {
             "value": "[parameters('virtualNetworkName')]"
-          },
-          "dnsZoneName": {
-            "value": "[parameters('dnsZoneName')]"
           }
         },
         "template": {
@@ -417,7 +405,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.14.85.62628",
-              "templateHash": "4145787963516547977"
+              "templateHash": "4128438303649747487"
             }
           },
           "parameters": {
@@ -505,9 +493,6 @@
             },
             "virtualNetworkName": {
               "type": "string"
-            },
-            "dnsZoneName": {
-              "type": "string"
             }
           },
           "resources": [
@@ -522,7 +507,7 @@
                 "administratorLoginPassword": "[parameters('adminPassword')]",
                 "network": {
                   "delegatedSubnetResourceId": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '2021-05-01').subnets[2].id]",
-                  "privateDnsZoneResourceId": "[resourceId('Microsoft.Network/privateDnsZones', format('{0}.mysql.database.azure.com', parameters('dnsZoneName')))]"
+                  "privateDnsZoneResourceId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.mysql.database.azure.com')]"
                 },
                 "storage": {
                   "storageSizeGB": "[parameters('storageSizeGB')]",
@@ -544,12 +529,56 @@
                 "name": "[parameters('skuName')]",
                 "tier": "[parameters('skuEdition')]"
               }
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}-private-endpoint', parameters('databaseName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'backends')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}-private-link', parameters('databaseName'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('databaseName'))]",
+                      "groupIds": [
+                        "sites"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforMySQL/flexibleServers', parameters('databaseName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2020-03-01",
+              "name": "[format('{0}/{1}', format('{0}-private-endpoint', parameters('databaseName')), format('{0}-dnsgroup', parameters('databaseName')))]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "[format('{0}-zoneconfig', parameters('databaseName'))]",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.mysql.database.azure.com')]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}-private-endpoint', parameters('databaseName')))]"
+              ]
             }
           ]
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-vnet', deployment().name))]"
       ]
     },
     {
@@ -768,9 +797,6 @@
           "serverFarmId": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-serverFarm', deployment().name)), '2020-10-01').outputs.id.value]"
           },
-          "dnsZoneName": {
-            "value": "[parameters('dnsZoneName')]"
-          },
           "virtualNetworkName": {
             "value": "[parameters('virtualNetworkName')]"
           }
@@ -782,7 +808,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.14.85.62628",
-              "templateHash": "11065999171267791506"
+              "templateHash": "9591810885249842739"
             }
           },
           "parameters": {
@@ -806,9 +832,6 @@
               "type": "string"
             },
             "virtualNetworkName": {
-              "type": "string"
-            },
-            "dnsZoneName": {
               "type": "string"
             }
           },
@@ -909,7 +932,7 @@
                   {
                     "name": "[format('{0}-zoneconfig', parameters('siteName'))]",
                     "properties": {
-                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', format('{0}.azurewebsites.net', parameters('dnsZoneName')))]"
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.mysql.database.azure.com')]"
                     }
                   }
                 ]
@@ -928,8 +951,11 @@
         }
       },
       "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-database', deployment().name))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-appinsights', deployment().name))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('{0}-{1}', parameters('name'), parameters('uniqueSuffix')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-serverFarm', deployment().name))]"
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-serverFarm', deployment().name))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('{0}-{1}', parameters('name'), parameters('uniqueSuffix'))), 'Microsoft.Resources/deployments', format('{0}-vnet', deployment().name))]"
       ]
     }
   ]

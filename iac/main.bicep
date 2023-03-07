@@ -25,7 +25,6 @@ param serverFarmKind string = 'linux'
 param siteName string = 'site-${name}-${uniqueSuffix}'
 param imageName string = 'nginx'
 param virtualNetworkName string = 'vnet-${name}-${uniqueSuffix}'
-param dnsZoneName string = '${name}${uniqueSuffix}'
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2020-06-01' = {
   name: '${name}-${uniqueSuffix}'
@@ -35,21 +34,23 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2020-06-01' = {
   }
 }
 
-module dns 'modules/dns.bicep' = {
-  name: '${deployment().name}-zone'
-  scope: resourceGroup
-  params: {
-    zoneName: dnsZoneName
-    virtualNetworkName: virtualNetworkName
-  }
-}
-
 module vnet 'modules/vnet.bicep' = {
   name: '${deployment().name}-vnet'
   scope: resourceGroup
   params: {
     virtualNetworkName: virtualNetworkName
     location: location
+  }
+}
+
+module dns 'modules/dns.bicep' = {
+  name: '${deployment().name}-zone'
+  scope: resourceGroup
+  dependsOn: [
+    vnet
+  ]
+  params: {
+    virtualNetworkName: virtualNetworkName
   }
 }
 
@@ -65,13 +66,15 @@ module registry 'modules/registry.bicep' = {
 module database 'modules/mysql.bicep' = {
   name: '${deployment().name}-database'
   scope: resourceGroup
+  dependsOn: [
+    vnet
+  ]
   params: {
     databaseName: databaseName
     location: location
     adminUser: databaseAdminUser
     adminPassword: databaseAdminPassword
     virtualNetworkName: virtualNetworkName
-    dnsZoneName: dnsZoneName
   }
 }
 
@@ -100,6 +103,11 @@ module serverFarm 'modules/serverFarm.bicep' = {
 module site 'modules/site.bicep' = {
   name: '${deployment().name}-site'
   scope: resourceGroup
+  dependsOn: [
+    vnet
+    insights
+    database
+  ]
   params: {
     siteName: siteName
     location: location
@@ -107,7 +115,6 @@ module site 'modules/site.bicep' = {
     imageName: imageName
     registryName: registryName
     serverFarmId: serverFarm.outputs.id
-    dnsZoneName: dnsZoneName
     virtualNetworkName: virtualNetworkName
   }
 }
